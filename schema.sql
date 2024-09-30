@@ -139,20 +139,6 @@ CREATE TABLE IF NOT EXISTS main_app_leavereportstaff (
     staff_id INTEGER NOT NULL REFERENCES main_app_staff(id)
 );
 
--- Feedback from students
-CREATE TABLE IF NOT EXISTS main_app_feedbackstudent (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, 
-    feedback TEXT NOT NULL, 
-    student_id INTEGER NOT NULL REFERENCES main_app_student(id)
-);
-
--- Feedback from staff
-CREATE TABLE IF NOT EXISTS main_app_feedbackstaff (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, 
-    feedback TEXT NOT NULL, 
-    staff_id INTEGER NOT NULL REFERENCES main_app_staff(id)
-);
-
 -- Attendance report linked to students and attendance
 CREATE TABLE IF NOT EXISTS main_app_attendancereport (
     id INTEGER PRIMARY KEY AUTOINCREMENT, 

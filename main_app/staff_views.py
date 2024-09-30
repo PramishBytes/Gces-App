@@ -168,28 +168,6 @@ def staff_apply_leave(request):
     return render(request, "staff_template/staff_apply_leave.html", context)
 
 
-def staff_feedback(request):
-    form = FeedbackStaffForm(request.POST or None)
-    staff = get_object_or_404(Staff, admin_id=request.user.id)
-    context = {
-        'form': form,
-        'feedbacks': FeedbackStaff.objects.filter(staff=staff),
-        'page_title': 'Add Feedback'
-    }
-    if request.method == 'POST':
-        if form.is_valid():
-            try:
-                obj = form.save(commit=False)
-                obj.staff = staff
-                obj.save()
-                messages.success(request, "Feedback submitted for review")
-                return redirect(reverse('staff_feedback'))
-            except Exception:
-                messages.error(request, "Could not Submit!")
-        else:
-            messages.error(request, "Form has errors!")
-    return render(request, "staff_template/staff_feedback.html", context)
-
 
 def staff_view_profile(request):
     staff = get_object_or_404(Staff, admin=request.user)
@@ -301,3 +279,4 @@ def fetch_student_result(request):
         return HttpResponse(json.dumps(result_data))
     except Exception as e:
         return HttpResponse('False')
+

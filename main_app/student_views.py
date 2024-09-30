@@ -110,31 +110,6 @@ def student_apply_leave(request):
     return render(request, "student_template/student_apply_leave.html", context)
 
 
-def student_feedback(request):
-    form = FeedbackStudentForm(request.POST or None)
-    student = get_object_or_404(Student, admin_id=request.user.id)
-    context = {
-        'form': form,
-        'feedbacks': FeedbackStudent.objects.filter(student=student),
-        'page_title': 'Student Feedback'
-
-    }
-    if request.method == 'POST':
-        if form.is_valid():
-            try:
-                obj = form.save(commit=False)
-                obj.student = student
-                obj.save()
-                messages.success(
-                    request, "Feedback submitted for review")
-                return redirect(reverse('student_feedback'))
-            except Exception:
-                messages.error(request, "Could not Submit!")
-        else:
-            messages.error(request, "Form has errors!")
-    return render(request, "student_template/student_feedback.html", context)
-
-
 def student_view_profile(request):
     student = get_object_or_404(Student, admin=request.user)
     form = StudentEditForm(request.POST or None, request.FILES or None,

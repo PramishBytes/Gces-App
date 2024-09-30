@@ -1,4 +1,4 @@
-"""college_management_system URL Configuration
+"""GCES APP URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.1/topics/http/urls/
@@ -22,7 +22,6 @@ from . import hod_views, staff_views, student_views, views
 urlpatterns = [
     path("", views.login_page, name='login_page'),
     path("get_attendance", views.get_attendance, name='get_attendance'),
-    path("firebase-messaging-sw.js", views.showFirebaseJS, name='showFirebaseJS'),
     path("doLogin/", views.doLogin, name='user_login'),
     path("logout_user/", views.logout_user, name='user_logout'),
     path("admin/home/", hod_views.admin_home, name='admin_home'),
@@ -44,10 +43,6 @@ urlpatterns = [
     path("session/manage/", hod_views.manage_session, name='manage_session'),
     path("session/edit/<int:session_id>",
          hod_views.edit_session, name='edit_session'),
-    path("student/view/feedback/", hod_views.student_feedback_message,
-         name="student_feedback_message",),
-    path("staff/view/feedback/", hod_views.staff_feedback_message,
-         name="staff_feedback_message",),
     path("student/view/leave/", hod_views.view_student_leave,
          name="view_student_leave",),
     path("staff/view/leave/", hod_views.view_staff_leave, name="view_staff_leave",),
@@ -88,7 +83,6 @@ urlpatterns = [
     path("staff/home/", staff_views.staff_home, name='staff_home'),
     path("staff/apply/leave/", staff_views.staff_apply_leave,
          name='staff_apply_leave'),
-    path("staff/feedback/", staff_views.staff_feedback, name='staff_feedback'),
     path("staff/view/profile/", staff_views.staff_view_profile,
          name='staff_view_profile'),
     path("staff/attendance/take/", staff_views.staff_take_attendance,
@@ -119,8 +113,6 @@ urlpatterns = [
          name='student_view_attendance'),
     path("student/apply/leave/", student_views.student_apply_leave,
          name='student_apply_leave'),
-    path("student/feedback/", student_views.student_feedback,
-         name='student_feedback'),
     path("student/view/profile/", student_views.student_view_profile,
          name='student_view_profile'),
     path("student/fcmtoken/", student_views.student_fcmtoken,
@@ -129,5 +121,4 @@ urlpatterns = [
          name="student_view_notification"),
     path('student/view/result/', student_views.student_view_result,
          name='student_view_result'),
-
 ]

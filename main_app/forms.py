@@ -128,16 +128,6 @@ class LeaveReportStaffForm(FormSettings):
         }
 
 
-class FeedbackStaffForm(FormSettings):
-
-    def __init__(self, *args, **kwargs):
-        super(FeedbackStaffForm, self).__init__(*args, **kwargs)
-
-    class Meta:
-        model = FeedbackStaff
-        fields = ['feedback']
-
-
 class LeaveReportStudentForm(FormSettings):
     def __init__(self, *args, **kwargs):
         super(LeaveReportStudentForm, self).__init__(*args, **kwargs)
@@ -148,16 +138,6 @@ class LeaveReportStudentForm(FormSettings):
         widgets = {
             'date': DateInput(attrs={'type': 'date'}),
         }
-
-
-class FeedbackStudentForm(FormSettings):
-
-    def __init__(self, *args, **kwargs):
-        super(FeedbackStudentForm, self).__init__(*args, **kwargs)
-
-    class Meta:
-        model = FeedbackStudent
-        fields = ['feedback']
 
 
 class StudentEditForm(CustomUserForm):
@@ -189,3 +169,4 @@ class EditResultForm(FormSettings):
     class Meta:
         model = StudentResult
         fields = ['session_year', 'subject', 'student', 'test', 'exam']
+

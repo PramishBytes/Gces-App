@@ -12,7 +12,7 @@ If You are in linux then Follow accordingly(Its all in terminal):
 3) now go to the directory this program has been clone and run
       python3 -m pip install -r requirements.txt
 
-4) The run :
+4) Then run :
       python manage.py runserver
 
 5) Create admin account by :

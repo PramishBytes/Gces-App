@@ -447,47 +447,6 @@ def check_email_availability(request):
         return HttpResponse(False)
 
 
-@csrf_exempt
-def student_feedback_message(request):
-    if request.method != 'POST':
-        feedbacks = FeedbackStudent.objects.all()
-        context = {
-            'feedbacks': feedbacks,
-            'page_title': 'Student Feedback Messages'
-        }
-        return render(request, 'hod_template/student_feedback_template.html', context)
-    else:
-        feedback_id = request.POST.get('id')
-        try:
-            feedback = get_object_or_404(FeedbackStudent, id=feedback_id)
-            reply = request.POST.get('reply')
-            feedback.reply = reply
-            feedback.save()
-            return HttpResponse(True)
-        except Exception as e:
-            return HttpResponse(False)
-
-
-@csrf_exempt
-def staff_feedback_message(request):
-    if request.method != 'POST':
-        feedbacks = FeedbackStaff.objects.all()
-        context = {
-            'feedbacks': feedbacks,
-            'page_title': 'Staff Feedback Messages'
-        }
-        return render(request, 'hod_template/staff_feedback_template.html', context)
-    else:
-        feedback_id = request.POST.get('id')
-        try:
-            feedback = get_object_or_404(FeedbackStaff, id=feedback_id)
-            reply = request.POST.get('reply')
-            feedback.reply = reply
-            feedback.save()
-            return HttpResponse(True)
-        except Exception as e:
-            return HttpResponse(False)
-
 
 @csrf_exempt
 def view_staff_leave(request):
