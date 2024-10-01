@@ -1,12 +1,8 @@
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import UserManager
-from django.dispatch import receiver
-from django.db.models.signals import post_save
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
-from django.contrib.auth.models import AbstractUser
-
-
-
+from django.contrib.auth.hashers import make_password
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class CustomUserManager(UserManager):
     def _create_user(self, email, password, **extra_fields):
@@ -29,7 +25,6 @@ class CustomUserManager(UserManager):
         assert extra_fields["is_superuser"]
         return self._create_user(email, password, **extra_fields)
 
-
 class Session(models.Model):
     start_year = models.DateField()
     end_year = models.DateField()
@@ -37,11 +32,9 @@ class Session(models.Model):
     def __str__(self):
         return "From " + str(self.start_year) + " to " + str(self.end_year)
 
-
 class CustomUser(AbstractUser):
     USER_TYPE = ((1, "HOD"), (2, "Staff"), (3, "Student"))
     GENDER = [("M", "Male"), ("F", "Female")]
-    
     
     username = None  # Removed username, using email instead
     email = models.EmailField(unique=True)
@@ -52,18 +45,17 @@ class CustomUser(AbstractUser):
     fcm_token = models.TextField(default="")  # For firebase notifications
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
+    
     objects = CustomUserManager()
 
     def __str__(self):
         return self.last_name + ", " + self.first_name
 
-
 class Admin(models.Model):
     admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-
-
 
 class Course(models.Model):
     name = models.CharField(max_length=120)
@@ -73,62 +65,55 @@ class Course(models.Model):
     def __str__(self):
         return self.name
 
-
 class Student(models.Model):
     admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.DO_NOTHING, null=True, blank=False)
-    session = models.ForeignKey(Session, on_delete=models.DO_NOTHING, null=True)
+    course = models.ForeignKey(Course, on_delete=models.PROTECT, null=True, blank=False)  # Use PROTECT to avoid deletion issue
+    session = models.ForeignKey(Session, on_delete=models.PROTECT, null=True)  # Use PROTECT here too
 
     def __str__(self):
         return self.admin.last_name + ", " + self.admin.first_name
 
-
 class Staff(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.DO_NOTHING, null=True, blank=False)
-    admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.PROTECT, null=True, blank=False)  # Prevent course deletion if referenced by staff
+    admin = models.OneToOneField(CustomUser, on_delete=models.CASCADE)  # CustomUser can be deleted with the staff
 
     def __str__(self):
         return self.admin.last_name + " " + self.admin.first_name
 
-
 class Subject(models.Model):
     name = models.CharField(max_length=120)
-    staff = models.ForeignKey(Staff,on_delete=models.CASCADE,)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True)  # Nullify staff instead of deleting
+    course = models.ForeignKey(Course, on_delete=models.PROTECT)  # Prevent course deletion if subjects exist
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
 
-
 class Attendance(models.Model):
-    session = models.ForeignKey(Session, on_delete=models.DO_NOTHING)
-    subject = models.ForeignKey(Subject, on_delete=models.DO_NOTHING)
+    session = models.ForeignKey(Session, on_delete=models.PROTECT)  # Protect sessions from being deleted
+    subject = models.ForeignKey(Subject, on_delete=models.PROTECT)  # Protect subjects from deletion
     date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-
 class AttendanceReport(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)  # If the student is deleted, attendance reports can be deleted
     attendance = models.ForeignKey(Attendance, on_delete=models.CASCADE)
     status = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-
 class LeaveReportStudent(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)  # Allow cascading delete for leave reports
     date = models.CharField(max_length=60)
     message = models.TextField()
     status = models.SmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-
 class LeaveReportStaff(models.Model):
-    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)  # Cascade delete for leave reports
     date = models.CharField(max_length=60)
     message = models.TextField()
     status = models.SmallIntegerField(default=0)
@@ -136,27 +121,24 @@ class LeaveReportStaff(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class NotificationStaff(models.Model):
-    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)  # Cascade delete notifications when staff is deleted
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
 
 class NotificationStudent(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)  # Cascade delete notifications when student is deleted
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-
 class StudentResult(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)  # Allow cascading delete for results
+    subject = models.ForeignKey(Subject, on_delete=models.PROTECT)  # Protect subjects from deletion if results exist
     test = models.FloatField(default=0)
     exam = models.FloatField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
 
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -167,7 +149,6 @@ def create_user_profile(sender, instance, created, **kwargs):
             Staff.objects.create(admin=instance)
         if instance.user_type == 3:
             Student.objects.create(admin=instance)
-
 
 @receiver(post_save, sender=CustomUser)
 def save_user_profile(sender, instance, **kwargs):

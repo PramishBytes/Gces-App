@@ -248,45 +248,54 @@ def edit_staff(request, staff_id):
         'staff_id': staff_id,
         'page_title': 'Edit Staff'
     }
+
     if request.method == 'POST':
         if form.is_valid():
+            # Get cleaned data from form
             first_name = form.cleaned_data.get('first_name')
             last_name = form.cleaned_data.get('last_name')
             address = form.cleaned_data.get('address')
             username = form.cleaned_data.get('username')
             email = form.cleaned_data.get('email')
             gender = form.cleaned_data.get('gender')
-            password = form.cleaned_data.get('password') or None
+            password = form.cleaned_data.get('password')
             course = form.cleaned_data.get('course')
-            passport = request.FILES.get('profile_pic') or None
+            passport = request.FILES.get('profile_pic')
+
             try:
                 user = CustomUser.objects.get(id=staff.admin.id)
+                # Update fields
                 user.username = username
                 user.email = email
-                if password != None:
-                    user.set_password(password)
-                if passport != None:
-                    fs = FileSystemStorage()
-                    filename = fs.save(passport.name, passport)
-                    passport_url = fs.url(filename)
-                    user.profile_pic = passport_url
                 user.first_name = first_name
                 user.last_name = last_name
                 user.gender = gender
                 user.address = address
-                staff.course = course
+
+                # Handle password update
+                if password:
+                    user.set_password(password)
+
+                # Handle profile picture update
+                if passport:
+                    fs = FileSystemStorage()
+                    filename = fs.save(passport.name, passport)
+                    passport_url = fs.url(filename)
+                    user.profile_pic = passport_url
+
+                # Save changes
                 user.save()
+                staff.course = course
                 staff.save()
+
                 messages.success(request, "Successfully Updated")
                 return redirect(reverse('edit_staff', args=[staff_id]))
             except Exception as e:
-                messages.error(request, "Could Not Update " + str(e))
+                messages.error(request, f"Could Not Update: {str(e)}")
         else:
-            messages.error(request, "Please fil form properly")
-    else:
-        user = CustomUser.objects.get(id=staff_id)
-        staff = Staff.objects.get(id=user.id)
-        return render(request, "hod_template/edit_staff_template.html", context)
+            messages.error(request, "Please fill the form properly")
+    
+    return render(request, "hod_template/edit_staff_template.html", context)
 
 
 def edit_student(request, student_id):
@@ -445,7 +454,6 @@ def check_email_availability(request):
         return HttpResponse(False)
     except Exception as e:
         return HttpResponse(False)
-
 
 
 @csrf_exempt
@@ -682,3 +690,4 @@ def delete_session(request, session_id):
         messages.error(
             request, "There are students assigned to this session. Please move them to another session.")
     return redirect(reverse('manage_session'))
+
